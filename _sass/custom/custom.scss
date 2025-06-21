@@ -1,0 +1,308 @@
+// =============================================================================
+// КОЛЬОРОВА СХЕМА ДЛЯ ТЕМНОЇ ТЕМИ
+// =============================================================================
+
+// Основний акцентний колір (жовтий)
+$primary-color: #ffcc00;
+// Темніший відтінок основного кольору
+$primary-dark: #e6b800;
+
+// Фонові кольори
+$background-dark: #1e1e1e;    // Найтемніший фон
+$background-main: #2c2c2c;    // Основний фон контенту
+$background-offset: #3a3a3a;  // Альтернативний фон
+$sidebar-bg: #262626;         // Фон бічної панелі
+
+// Кольори тексту
+$text-light: #f0f0f0;         // Основний текст
+$text-muted: #c0c0c0;         // Другорядний текст
+
+// Кольори меж та роздільників
+$border-color: #444;          // Основні межі
+$border-dark: #666;           // Темні межі
+$border-subtle: #555;         // Тонкі межі
+
+// =============================================================================
+// ПЕРЕВИЗНАЧЕННЯ ЗМІННИХ JUST THE DOCS
+// =============================================================================
+
+:root {
+  // Основні кольори
+  --jtd-color-primary: #{$primary-color};
+  --jtd-color-primary-dark: #{$primary-dark};
+  --jtd-color-primary-muted: #333; // Приглушений основний колір
+
+  // Текст
+  --jtd-color-text: #{$text-light};
+  --jtd-color-text-light: #{$text-muted};
+  --jtd-color-text-muted: #9e9e9e;
+  --jtd-color-body-text-invert: #{$background-dark};
+
+  // Фон
+  --jtd-color-body-bg: #{$background-dark};
+  --jtd-color-main-bg: #{$background-main};
+  --jtd-color-bg-offset: #{$background-offset};
+  --jtd-color-sidenav-bg: #{$sidebar-bg};
+
+  // Код
+  --jtd-code-bg: #{$background-dark};
+  --jtd-code-block-color: #e2e2e2;
+  --jtd-code-inline-bg: #2d2d2d;
+  --jtd-code-inline-color: #{$primary-color};
+
+  // Навігація та посилання
+  --jtd-color-nav-hover: #{$primary-color};
+  --jtd-color-nav-active: #{$primary-color};
+  --jtd-color-link: #{$primary-color};
+
+  // Кнопки
+  --jtd-btn-bg: #333;
+  --jtd-btn-color: #{$primary-color};
+
+  // Границі
+  --jtd-color-border: #{$border-color};
+  --jtd-color-border-dark: #{$border-dark};
+  --jtd-color-border-subtle: #{$border-subtle};
+  --jtd-hr-color: #{$border-color};
+
+  // Зміст (TOC)
+  --jtd-color-toc-active-bg: #333;
+  --jtd-color-toc-active-l1: #{$primary-color};
+  --jtd-color-toc-active-l2: #{$primary-color};
+}
+
+// =============================================================================
+// КОРЕКТУВАННЯ ОСНОВНИХ ЕЛЕМЕНТІВ
+// =============================================================================
+
+// Загальний фон сторінки
+body {
+  background-color: var(--jtd-color-body-bg);
+  color: var(--jtd-color-text);
+}
+
+// Шапка сайту
+.site-header {
+  background-color: var(--jtd-color-sidenav-bg);
+  border-bottom: 1px solid var(--jtd-color-border);
+}
+
+// Навігація
+.site-nav {
+  background-color: var(--jtd-color-sidenav-bg);
+
+  // Активні пункти меню
+  .nav-list .nav-list-item .nav-list-link.active {
+    color: var(--jtd-color-primary);
+    font-weight: 600;
+  }
+}
+
+// =============================================================================
+// СТИЛІ ДЛЯ ПОШУКОВОЇ ПАНЕЛІ
+// =============================================================================
+
+.search {
+  // Контейнер пошуку
+  background-color: var(--jtd-color-sidenav-bg);
+  border-bottom: 1px solid var(--jtd-color-border);
+
+  // Поле введення
+  .search-input {
+    background-color: var(--jtd-color-main-bg);
+    color: var(--jtd-color-text);
+    border: 1px solid var(--jtd-color-border);
+
+    &:focus {
+      border-color: var(--jtd-color-primary);
+      box-shadow: 0 0 0 2px rgba(255, 204, 0, 0.3);
+    }
+
+    &::placeholder {
+      color: var(--jtd-color-text-muted);
+    }
+  }
+
+  // Іконка пошуку
+  .search-icon {
+    color: var(--jtd-color-text-muted);
+  }
+
+  // Результати пошуку
+  .search-results {
+    background-color: var(--jtd-color-main-bg);
+    border: 1px solid var(--jtd-color-border);
+
+    // Окремий результат
+    .search-result {
+      border-bottom: 1px solid var(--jtd-color-border-subtle);
+
+      &:hover {
+        background-color: var(--jtd-color-bg-offset);
+      }
+
+      // Заголовок результату
+      .search-result-title {
+        color: var(--jtd-color-primary);
+      }
+
+      // Шлях результату
+      .search-result-rel-url {
+        color: var(--jtd-color-text-muted);
+      }
+
+      // Виділений текст
+      em {
+        background-color: rgba(255, 204, 0, 0.2);
+        font-style: normal;
+        font-weight: bold;
+      }
+    }
+  }
+}
+
+// =============================================================================
+// СТИЛІ ДЛЯ КОДУ
+// =============================================================================
+
+// // Блоки коду
+// .highlight {
+//   background-color: var(--jtd-code-bg) !important;
+//   border-radius: 4px;
+// }
+//
+// pre.highlight {
+//   border: 1px solid var(--jtd-color-border);
+//   background-color: var(--jtd-code-bg);
+//   color: var(--jtd-code-block-color);
+// }
+//
+// // Рядковий код
+// code {
+//   background-color: var(--jtd-code-inline-bg);
+//   color: var(--jtd-code-inline-color);
+//   padding: 0.2em 0.4em;
+//   border-radius: 3px;
+// }
+
+// =============================================================================
+// СТИЛІ ДЛЯ ПОСИЛАНЬ ТА КНОПОК
+// =============================================================================
+
+// Основні посилання
+a:not(.btn) {
+  color: var(--jtd-color-link);
+  text-decoration: none;
+
+  &:hover {
+    color: var(--jtd-color-primary-dark);
+    text-decoration: underline;
+  }
+}
+
+// Кнопки
+.btn {
+  background-color: var(--jtd-btn-bg);
+  color: var(--jtd-btn-color);
+  border: 1px solid var(--jtd-color-border);
+
+  &:hover {
+    background-color: lighten(#333, 5%);
+    border-color: var(--jtd-color-primary);
+  }
+}
+
+// =============================================================================
+// СТИЛІ ДЛЯ КНОПКИ GITHUB РЕПОЗИТОРІЯ (ВИПРАВЛЕНА ВЕРСІЯ)
+// =============================================================================
+
+// Загальні стилі для кнопок GitHub
+.site-button .btn,
+.footer-btn .btn {
+  background-color: var(--jtd-btn-bg) !important;
+  color: var(--jtd-btn-color) !important;
+  border: 1px solid var(--jtd-color-border) !important;
+
+  // Стилі при наведенні
+  &:hover {
+    background-color: lighten(#333, 5%) !important;
+    border-color: var(--jtd-color-primary) !important;
+    color: var(--jtd-color-primary) !important;
+  }
+
+  // Стилі для іконки
+  svg {
+    fill: var(--jtd-btn-color) !important;
+  }
+
+  &:hover svg {
+    fill: var(--jtd-color-primary) !important;
+  }
+}
+
+// =============================================================================
+// ДОДАТКОВІ ЕЛЕМЕНТИ
+// =============================================================================
+
+// Заголовки
+h1 {
+             color: #2c84fa;
+             font-weight: 600;
+}
+
+h2 strong  {
+          color: #f5d25e;
+}
+
+h3 strong
+  {
+          color: #ff821b;
+}
+
+h4 strong {
+          color: #1ba000;
+}
+
+h5 strong {
+          color: #94dbfc;
+}
+h6 strong {
+          color: #92d100;
+}
+
+strong {
+    color: #149c3d
+}
+
+
+
+// Таблиці
+table {
+  border: 1px solid var(--jtd-color-border);
+
+  th {
+    background-color: var(--jtd-color-bg-offset);
+  }
+
+  td, th {
+    border: 1px solid var(--jtd-color-border-subtle);
+  }
+}
+
+// Роздільники
+hr {
+  border-color: var(--jtd-hr-color);
+}
+
+// =============================================================================
+// АДАПТАЦІЯ ДЛЯ МОБІЛЬНИХ ПРИСТРОЇВ
+// =============================================================================
+@media (max-width: 768px) {
+  .site-nav {
+    background-color: var(--jtd-color-main-bg);
+  }
+
+  .search {
+    background-color: var(--jtd-color-main-bg);
+  }
+}

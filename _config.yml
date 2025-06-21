@@ -1,0 +1,35 @@
+title: Java notes
+description: Knowledge base and notes on learning Java.
+url: "https://Mwxyz2022.github.io"
+baseurl: "/jv-docs"
+
+theme: just-the-docs
+
+markdown: kramdown
+
+# Настройки поиска
+search_enabled: true
+search_tokenizer_separator: /[\s\/\-]+/
+search_highlight: true
+
+# Цветовая схема - используйте одну из встроенных
+color_scheme: dark
+
+# Навигация
+nav_enabled: true
+
+# Внешние ссылки
+# aux_links:
+#   "GitHub repository":
+#     - "https://github.com/Mwxyz2022/java-docs"
+
+# Исключения
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - vendor
+  - README.md
+
+# Настройки Sass
+sass:
+  style: compressed
