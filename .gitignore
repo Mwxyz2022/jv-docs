@@ -6,4 +6,4 @@ content.md
 .env
 prompt/
 readme_me.md
-__pycache__
+__pycache__/
