@@ -1,0 +1,12 @@
+/0_vstup_do_prohramuvannia/0.1_fundamentalni_kontseptsii/index.md
+/0_vstup_do_prohramuvannia/0.1_fundamentalni_kontseptsii/0.1.1_shcho_take_prohrama/0.1.1.1_vyznachennia_nabir_instruktsii_dlia_kompiutera/index.md
+/0_vstup_do_prohramuvannia/0.1_fundamentalni_kontseptsii/0.1.1_shcho_take_prohrama/0.1.1.1_vyznachennia_nabir_instruktsii_dlia_kompiutera/qa.md
+/0_vstup_do_prohramuvannia/0.1_fundamentalni_kontseptsii/0.1.1_shcho_take_prohrama/index.md
+/0_vstup_do_prohramuvannia/0.1_fundamentalni_kontseptsii/0.1.1_shcho_take_prohrama/0.1.1.2_kliuchovi_komponenty_prohramy/0.1.1.2.1_stan_prohramy_zminni/index.md
+/0_vstup_do_prohramuvannia/0.1_fundamentalni_kontseptsii/0.1.1_shcho_take_prohrama/0.1.1.2_kliuchovi_komponenty_prohramy/0.1.1.2.1_stan_prohramy_zminni/qa.md
+/0_vstup_do_prohramuvannia/0.1_fundamentalni_kontseptsii/0.1.1_shcho_take_prohrama/0.1.1.2_kliuchovi_komponenty_prohramy/0.1.1.2.2_povedinka_prohramy_metody_funktsii/index.md
+/0_vstup_do_prohramuvannia/0.1_fundamentalni_kontseptsii/0.1.1_shcho_take_prohrama/0.1.1.2_kliuchovi_komponenty_prohramy/0.1.1.2.2_povedinka_prohramy_metody_funktsii/qa.md
+/0_vstup_do_prohramuvannia/0.1_fundamentalni_kontseptsii/0.1.1_shcho_take_prohrama/0.1.1.2_kliuchovi_komponenty_prohramy/index.md
+/0_vstup_do_prohramuvannia/0.1_fundamentalni_kontseptsii/0.1.1_shcho_take_prohrama/0.1.1.2_kliuchovi_komponenty_prohramy/qa.md
+/0_vstup_do_prohramuvannia/0.1_fundamentalni_kontseptsii/0.1.1_shcho_take_prohrama/qa.md
+/0_vstup_do_prohramuvannia/index.md
