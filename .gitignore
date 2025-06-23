@@ -5,3 +5,5 @@ content.md
 .venv/
 .env
 prompt/
+readme_me.md
+__pycache__

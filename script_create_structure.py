@@ -1,205 +1,170 @@
 # -*- coding: utf-8 -*-
+
+# === ІМПОРТ НЕОБХІДНИХ БІБЛІОТЕК ===
+# os: для взаємодії з операційною системою (створення папок, шляхів)
 import os
+# re: для роботи з регулярними виразами (пошук патернів у тексті)
 import re
+# shutil: для операцій з файлами високого рівня (наприклад, видалення дерев каталогів)
 import shutil
+# slugify: для перетворення тексту в URL-сумісний формат (напр. "Привіт Світ" -> "privit-svit")
+from slugify import slugify
 
-def slugify(text: str) -> str:
+def clean_generated_folders(base_path='.'):
     """
-    Перетворює український текст на URL-дружній "слаг".
-    Транслітерує, переводить у нижній регістр, замінює пробіли на '_'
-    та видаляє всі неприпустимі символи.
+    Очищує раніше згенеровані папки.
+    Це потрібно, щоб уникнути конфліктів та застарілих файлів при повторному запуску скрипту.
+    Функція читає `content.md` і видаляє папки, що відповідають його структурі.
     """
-    translit_map = {
-        'а': 'a', 'б': 'b', 'в': 'v', 'г': 'h', 'ґ': 'g', 'д': 'd', 'е': 'e',
-        'є': 'ie', 'ж': 'zh', 'з': 'z', 'и': 'y', 'і': 'i', 'ї': 'i', 'й': 'i',
-        'к': 'k', 'л': 'l', 'м': 'm', 'н': 'n', 'о': 'o', 'п': 'p', 'р': 'r',
-        'с': 's', 'т': 't', 'у': 'u', 'ф': 'f', 'х': 'kh', 'ц': 'ts', 'ч': 'ch',
-        'ш': 'sh', 'щ': 'shch', 'ь': '', 'ю': 'iu', 'я': 'ia'
-    }
-    text_lower = text.lower()
-    slug = "".join(translit_map.get(char, char) for char in text_lower)
-    slug = re.sub(r'[\s/]+', '_', slug)
-    slug = re.sub(r'[^\w_]', '', slug)
-    return slug.strip('_')
-
-def parse_structure(content: str) -> dict:
-    """
-    Парсить вхідний текстовий контент і будує ієрархічне дерево.
-    """
-    root = {'children': [], 'title': 'Root', 'slug': ''}
-    nodes_map = {'': root}
-    
-    for line in content.splitlines():
-        line = line.strip()
-        if not line or line.startswith('***'):
-            continue
-
-        num_match = re.search(r'([\d\.]+)', line)
-        if not num_match:
-            continue
-        
-        full_number = num_match.group(1).strip('.')
-        
-        # --- Оновлена, більш надійна логіка очищення заголовка ---
-        # 1. Починаємо з повного рядка, видаляємо markdown-префікси
-        title_text = re.sub(r'^(?:[#\s*-]|\*\*)*', '', line).strip()
-        # 2. Видаляємо ключові слова, такі як "Тема", "Частина"
-        title_text = re.sub(r'\b(Тема|Підрозділ|Частина)\b', '', title_text)
-        # 3. Видаляємо сам номер
-        title_text = title_text.replace(full_number, '')
-        # 4. Видаляємо будь-які залишкові двокрапки, зірочки та зайві пробіли по краях
-        title_text = title_text.strip(':* ')
-        # 5. Стискаємо множинні пробіли в один
-        title_text = re.sub(r'\s+', ' ', title_text).strip()
-        # --- Кінець оновленої логіки ---
-
-        if not title_text:
-            print(f"ПОПЕРЕДЖЕННЯ: Не вдалося видобути заголовок для номера '{full_number}'. Рядок: '{line}'")
-            continue
-
-        parent_number = '.'.join(full_number.split('.')[:-1])
-        parent_node = nodes_map.get(parent_number)
-
-        if parent_node is None:
-            print(f"ПОПЕРЕДЖЕННЯ: Не знайдено батьківський елемент для '{full_number}'. Рядок пропущено.")
-            continue
-
-        level = len(full_number.split('.'))
-        slug = f"{full_number}_{slugify(title_text)}"
-
-        new_node = {
-            'full_number': full_number,
-            'title_with_number': f"{full_number} {title_text}",
-            'clean_title': title_text,
-            'slug': slug,
-            'nav_order': len(parent_node['children']) + 1,
-            'level': level,
-            'children': []
-        }
-        
-        parent_node['children'].append(new_node)
-        nodes_map[full_number] = new_node
-
-    return root
-
-def generate_files(node: dict, path_parts: list, parent_full_title: str = "", grand_parent_full_title: str = ""):
-    """
-    Рекурсивно обходить дерево та генерує папки і файли.
-    """
-    # Спеціальна обробка для кореневого вузла, який сам не є сторінкою
-    if 'slug' not in node or not node['slug']:
-        # Його нащадки мають своїм батьком головну сторінку документації
-        for child in node['children']:
-            generate_files(child, path_parts, parent_full_title="Документація")
+    # Перевірка, чи існує файл `content.md`. Якщо ні, очищення не потрібне.
+    if not os.path.exists('content.md'):
+        print("Файл content.md не знайдено. Очищення не потрібне.")
         return
-
-    current_path_str = os.path.join(*path_parts, node['slug'])
-    os.makedirs(current_path_str, exist_ok=True)
-    
-    needs_qa_file = node.get('level', 0) >= 3
-
-    # --- Формуємо заголовки ---
-    current_full_title = f"{node['full_number']} {node['clean_title']}"
-    title_escaped = current_full_title.replace("'", "''")
-
-    # --- Формуємо Front Matter для index.md ---
-    has_children_fm = 'true' if node['children'] else 'false'
-    parent_fm = f"parent: '{parent_full_title.replace("'", "''")}'\n" if parent_full_title else ""
-    grand_parent_fm = f"grand_parent: '{grand_parent_full_title.replace("'", "''")}'\n" if grand_parent_full_title else ""
-    
-    index_body = f"# {node['title_with_number']}\n"
-    if needs_qa_file:
-        index_body += "\n[Перейти до Q&A](./qa.md)\n"
-
-    index_fm_content = f"""---
-layout: default
-title: '{title_escaped}'
-{parent_fm}{grand_parent_fm}nav_order: {node['nav_order']}
-has_children: {has_children_fm}
----
-"""
-    with open(os.path.join(current_path_str, 'index.md'), 'w', encoding='utf-8') as f:
-        f.write(index_fm_content + index_body)
-
-    # --- Генерація qa.md, якщо необхідно ---
-    if needs_qa_file:
-        qa_full_title = f"{node['full_number']} Q&A {node['clean_title']}"
-        qa_title_escaped = qa_full_title.replace("'", "''")
-        qa_parent_title_escaped = current_full_title.replace("'", "''")
         
-        qa_fm_content = f"""---
-layout: default
-title: '{qa_title_escaped}'
-parent: '{qa_parent_title_escaped}'
-nav_order: 999
----
-"""
-        qa_body = f"# {node['full_number']} Q&A {node['clean_title']}\n\n[Повернутись до теми](./index.md)\n"
-        with open(os.path.join(current_path_str, 'qa.md'), 'w', encoding='utf-8') as f:
-            f.write(qa_fm_content + qa_body)
+    print("Запускаю очищення раніше згенерованих каталогів...")
+    # Відкриваємо `content.md` для читання
+    with open('content.md', 'r', encoding='utf-8') as f:
+        lines = f.readlines()
 
-    # --- Рекурсивний виклик для дочірніх елементів ---
-    new_path_parts = path_parts + [node['slug']]
-    for child in node['children']:
-        # Поточний батько стає дідусем для наступного рівня
-        generate_files(child, new_path_parts, parent_full_title=current_full_title, grand_parent_full_title=parent_full_title)
+    # Проходимо по кожному рядку файлу
+    for line in lines:
+        # Шукаємо рядки, що відповідають формату "1.2.3 Назва розділу"
+        match = re.match(r'^(\d+(\.\d+)*)\s+(.+)', line)
+        if match:
+            # Витягуємо назву розділу
+            title = match.group(3).strip()
+            # Перетворюємо назву на безпечне ім'я для папки
+            folder_name = slugify(title)
+            # Ми видаляємо тільки папки верхнього рівня, оскільки скрипт створює їх з нуля.
+            # Це перевіряється по наявності крапки в номері (напр. "1" - верхній рівень, "1.1" - ні).
+            if '.' not in match.group(1):
+                path_to_remove = os.path.join(base_path, folder_name)
+                # Якщо така папка існує, видаляємо її рекурсивно
+                if os.path.isdir(path_to_remove):
+                    shutil.rmtree(path_to_remove)
+                    print(f"Видалено каталог: {path_to_remove}")
+    print("Очищення завершено.")
 
-def generate_root_index(output_directory: str):
+def create_structure(lines, parent_path='.', parent_title='Home', level=1):
     """
-    Створює головний index.md файл у корені документації.
-    """
-    root_fm = """---
-layout: default
-title: Документація
-nav_order: 1
-has_children: true
----
-
-# Java всеохопна документація
-
-Оберіть розділ для початку.
-"""
+    Рекурсивно створює структуру каталогів та файли `index.md`.
+    Функція обробляє список рядків з `content.md` і для кожного створює
+    відповідну папку та файл `index.md` з необхідною службовою інформацією (Jekyll Front Matter).
     
-    with open(os.path.join(output_directory, 'index.md'), 'w', encoding='utf-8') as f:
-        f.write(root_fm)
+    :param lines: Список рядків, що залишилися для обробки.
+    :param parent_path: Шлях до батьківського каталогу.
+    :param parent_title: Назва батьківського розділу для навігації.
+    :param level: Поточний рівень вкладеності (1 для кореневих розділів).
+    :return: Кількість оброблених рядків.
+    """
+    i = 0
+    # Цикл проходить по рядках, доки вони не закінчаться
+    while i < len(lines):
+        line = lines[i]
+        
+        # Визначаємо рівень вкладеності поточного елемента за його номером
+        match = re.match(r'^(\d+(\.\d+)*)\s+(.+)', line)
+        if not match:
+            # Якщо рядок не відповідає формату, ігноруємо його
+            i += 1
+            continue
+            
+        current_level_str = match.group(1)
+        current_level = len(current_level_str.split('.'))
+        
+        # Якщо поточний рівень менший за очікуваний, це означає, що ми повернулися
+        # на рівень вище, тому потрібно завершити рекурсивний виклик.
+        if current_level < level:
+            return i 
+
+        # Якщо поточний рівень більший, це означає, що це дочірній елемент.
+        # Ми викликаємо цю ж функцію рекурсивно для обробки вкладеної структури.
+        if current_level > level:
+            # `lines[i:]` передає залишок списку в рекурсію.
+            lines_processed = create_structure(lines[i:], current_path, title, level + 1)
+            # Пропускаємо рядки, які були оброблені в рекурсивному виклику.
+            i += lines_processed
+            continue
+
+        # --- ОБРОБКА ЕЛЕМЕНТА ПОТОЧНОГО РІВНЯ ---
+
+        # Витягуємо назву і створюємо slug (ім'я для папки/URL)
+        title = match.group(3).strip()
+        slug = slugify(title)
+        # Формуємо повний шлях до нового каталогу
+        current_path = os.path.join(parent_path, slug)
+        
+        # Створюємо каталог, якщо він ще не існує
+        os.makedirs(current_path, exist_ok=True)
+        
+        # Шлях до файлу index.md всередині нового каталогу
+        index_path = os.path.join(current_path, 'index.md')
+        
+        # Перевіряємо, чи є у цього елемента дочірні.
+        # Це потрібно для Jekyll-теми, щоб відобразити стрілочку для розгортання меню.
+        has_children = False
+        if i + 1 < len(lines): # Перевіряємо, чи є наступний рядок
+            next_line = lines[i+1]
+            next_match = re.match(r'^(\d+(\.\d+)*)', next_line)
+            if next_match:
+                # Якщо рівень наступного елемента більший, значить, поточний має дочірні
+                next_level = len(next_match.group(1).split('.'))
+                if next_level > level:
+                    has_children = True
+
+        # Створюємо файл index.md та записуємо в нього службову інформацію Jekyll (Front Matter)
+        with open(index_path, 'w', encoding='utf-8') as f:
+            f.write('---\n')
+            f.write('layout: default\n')             # Шаблон сторінки
+            f.write(f'title: {title}\n')             # Заголовок сторінки
+            f.write(f'parent: {parent_title}\n')     # Батьківський елемент для навігації
+            
+            # Витягуємо останню цифру з номера (напр. з "1.2.3" беремо "3") для сортування
+            nav_order = current_level_str.split('.')[-1]
+            f.write(f'nav_order: {nav_order}\n')
+            
+            # Якщо є дочірні елементи, додаємо відповідний прапорець
+            if has_children:
+                f.write('has_children: true\n')
+                
+            f.write('---\n\n') # Кінець Front Matter
+            # Додаємо основний заголовок на сторінку
+            f.write(f'# {title}\n\n')
+            f.write('This is a placeholder for the content.\n') # Тимчасовий текст-заглушка
+        
+        i += 1
+    
+    return i # Повертаємо кількість оброблених рядків
 
 def main():
     """
-    Головна функція скрипту.
+    Головна функція, яка керує виконанням скрипту.
     """
-    input_file = "content.md"
-    output_directory = "." # Генеруємо файли в поточну директорію
+    # 1. Спершу очищуємо старі згенеровані папки
+    clean_generated_folders()
 
-    if not os.path.exists(input_file):
-        print(f"Помилка: Файл '{input_file}' не знайдено.")
+    # 2. Намагаємося прочитати файл `content.md`
+    try:
+        with open('content.md', 'r', encoding='utf-8') as f:
+            lines = f.readlines()
+    except FileNotFoundError:
+        print("Помилка: файл content.md не знайдено. Будь ласка, створіть цей файл зі структурою документації.")
         return
 
-    print(f"Читання структури з файлу '{input_file}'...")
-    with open(input_file, 'r', encoding='utf-8') as f:
-        content = f.read()
-    
-    print("Парсинг структури...")
-    structure_tree = parse_structure(content)
+    # 3. Створюємо кореневий файл index.md для сайту (головна сторінка)
+    with open('index.md', 'w', encoding='utf-8') as f:
+        f.write('---\n')
+        f.write('layout: home\n')
+        f.write('title: Home\n')
+        f.write('nav_order: 1\n')
+        f.write('---\n\n')
+        f.write('# Welcome to the Documentation\n\n')
+        f.write('Select a topic from the navigation to get started.\n')
+        
+    # 4. Запускаємо рекурсивний процес створення структури
+    create_structure(lines)
+    print("Структура каталогів та файли index.md успішно створені.")
 
-    # --- Безпечне очищення ---
-    print("Очищення попередньо згенерованих файлів...")
-    top_level_dirs_to_delete = [child['slug'] for child in structure_tree.get('children', [])]
-    for dirname in top_level_dirs_to_delete:
-        if os.path.isdir(dirname):
-            print(f"  - Видалення директорії: {dirname}")
-            shutil.rmtree(dirname)
-    root_index_path = os.path.join(output_directory, 'index.md')
-    if os.path.realpath(root_index_path) != os.path.realpath(input_file) and os.path.exists(root_index_path):
-        print("  - Видалення кореневого index.md")
-        os.remove(root_index_path)
-    # --- Кінець безпечного очищення ---
-
-    print(f"Генерація файлів та папок у поточній директорії...")
-    generate_files(structure_tree, [output_directory])
-    generate_root_index(output_directory)
-
-    print("\nГотово! Структура документації успішно згенерована.")
-    print("Спробуйте запустити 'make dev' знову.")
-
-if __name__ == "__main__":
+# Цей блок виконується тільки тоді, коли скрипт запускається напряму
+if __name__ == '__main__':
     main()
